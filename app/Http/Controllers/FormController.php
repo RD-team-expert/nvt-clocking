@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Form;
+use App\Services\ClockingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -10,8 +11,16 @@ use Illuminate\Validation\Rules\File;
 use Inertia\Inertia;
 use Inertia\Response;
 
+
 class FormController extends Controller
 {
+    protected ClockingService $Clocking;
+
+    public function __construct(ClockingService $Clocking)
+    {
+        $this->clocking = $Clocking;
+    }
+
     /**
      * Display the form creation page
      */
@@ -29,28 +38,37 @@ class FormController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'date' => ['required', 'date'],
-            'file' => ['nullable', File::types(['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'])->max(10240)], // 10MB max
+            'file' => ['nullable', File::types(['xlsx','xls','csv'])->max(10240)], // 10MB max
         ]);
-        
+
 
         // Handle file upload if present
         $filePath = null;
         $originalName = null;
-        
+
         if ($request->hasFile('file')) {
             $file = $request->file('file');
             $originalName = $file->getClientOriginalName();
             $filePath = $file->store('form-uploads', 'public');
         }
 
+
+
         // Create form record in database
-        Form::create([
+        $form = Form::create([
             'name' => $validated['name'],
             'date' => $validated['date'],
             'file_path' => $filePath,
             'file_original_name' => $originalName,
             'user_id' => $request->user()->id,
         ]);
+
+        // Get the auto-created ID
+        $formId = $form->id;
+
+        // create the clocking intries
+        $this->clocking->index(public_path('storage/' . $filePath),$formId);
+
 
         return redirect()->route('forms.index')->with('success', 'Form submitted successfully!');
     }
