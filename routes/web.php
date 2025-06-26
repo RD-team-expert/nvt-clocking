@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\ClockingController;
+use App\Http\Controllers\ExportingController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -13,6 +14,10 @@ Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+
+Route::get('/export/{model}/csv/{start?}/{end?}/{stores?}', [ExportingController::class, 'ExportClockingCsv']);
+Route::get('/export/{model}/json/{start?}/{end?}/{stores?}', [ExportingController::class, 'ExportClockingJson']);
+
 // Form routes - protected by authentication
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
@@ -21,7 +26,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/forms/{form}/edit', [FormController::class, 'edit'])->name('forms.edit');
     Route::put('/forms/{form}', [FormController::class, 'update'])->name('forms.update');
     Route::delete('/forms/{form}', [FormController::class, 'destroy'])->name('forms.destroy');
-    
+
     // Clocking data routes
     Route::get('/api/clocking', [ClockingController::class, 'index'])->name('clocking.index');
     Route::post('/api/clocking', [ClockingController::class, 'store'])->name('clocking.store');
