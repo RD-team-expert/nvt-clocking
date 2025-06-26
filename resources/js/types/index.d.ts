@@ -17,6 +17,27 @@ export interface NavItem {
     isActive?: boolean;
 }
 
+export interface ClockingRecord {
+    id: number;
+    AC_No: string;
+    Name: string;
+    Date: string;
+    Clock_In: string | null;
+    Clock_Out: string | null;
+    Entry_ID: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PaginationData {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+}
+
 export type AppPageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
     name: string;
     quote: { message: string; author: string };

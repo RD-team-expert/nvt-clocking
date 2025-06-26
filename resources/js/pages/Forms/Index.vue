@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Download, Trash2, Calendar, User, File } from 'lucide-vue-next';
+import { Plus, Download, Trash2, Calendar, User, File, Edit } from 'lucide-vue-next';
 import { type BreadcrumbItem } from '@/types';
 
 // Component props interface
@@ -38,8 +38,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Delete form handler
 const deleteForm = (formId: number) => {
     if (confirm('Are you sure you want to delete this form?')) {
-        // Use Inertia to delete the form
-        window.$inertia.delete(route('forms.destroy', formId));
+        // Use Inertia router to delete the form
+        router.delete(route('forms.destroy', formId));
     }
 };
 </script>
@@ -90,6 +90,18 @@ const deleteForm = (formId: number) => {
                             
                             <!-- Action buttons -->
                             <div class="flex items-center gap-2">
+                                <!-- Edit form button -->
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    as-child
+                                >
+                                    <Link :href="route('forms.edit', form.id)" class="flex items-center gap-1">
+                                        <Edit class="h-3 w-3" />
+                                        Edit
+                                    </Link>
+                                </Button>
+                                
                                 <!-- Download file button -->
                                 <Button
                                     v-if="form.file_url"
