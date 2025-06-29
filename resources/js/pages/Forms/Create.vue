@@ -51,7 +51,7 @@ const submit = () => {
                 <h1 class="text-2xl font-semibold tracking-tight">Create New Form</h1>
                 <p class="text-muted-foreground">Fill out the form below to submit your information.</p>
             </div>
-            
+
             <!-- Form card container -->
             <Card class="max-w-2xl">
                 <CardHeader>
@@ -60,7 +60,7 @@ const submit = () => {
                         Please provide your name, select a date, and optionally upload a file.
                     </CardDescription>
                 </CardHeader>
-                
+
                 <CardContent>
                     <!-- Form element -->
                     <form @submit.prevent="submit" class="space-y-6">
@@ -77,7 +77,7 @@ const submit = () => {
                             />
                             <InputError :message="form.errors.name" />
                         </div>
-                        
+
                         <!-- Date input field -->
                         <div class="space-y-2">
                             <Label for="date">Date *</Label>
@@ -90,22 +90,22 @@ const submit = () => {
                             />
                             <InputError :message="form.errors.date" />
                         </div>
-                        
+
                         <!-- File upload field -->
                         <div class="space-y-2">
-                            <Label>File Upload (Optional)</Label>
+                            <Label>File Upload (Mandatory)</Label>
                             <FileUpload
                                 v-model="form.file"
                                 :error="form.errors.file"
-                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                accept="*"
                                 :max-size="10"
                                 placeholder="Choose a file or drag and drop"
                             />
                             <p class="text-xs text-muted-foreground">
-                                Supported formats: PDF, DOC, DOCX, JPG, JPEG, PNG (Max: 10MB)
+                                Supported formats: Xls, Xlsx, Csv (Max Size 10MB)
                             </p>
                         </div>
-                        
+
                         <!-- Form submission buttons -->
                         <div class="flex gap-4 pt-4">
                             <Button
@@ -116,7 +116,7 @@ const submit = () => {
                                 <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                                 {{ form.processing ? 'Submitting...' : 'Submit Form' }}
                             </Button>
-                            
+
                             <Button
                                 type="button"
                                 variant="outline"

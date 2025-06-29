@@ -55,6 +55,12 @@ const submit = () => {
             // Form will redirect to forms.index on success
         },
     });
+    form.post(route('clocking.update', props.form.id), {
+        forceFormData: true, // Required for file uploads
+        onSuccess: () => {
+            // Form will redirect to forms.index on success
+        },
+    });
 };
 </script>
 
@@ -76,13 +82,13 @@ const submit = () => {
                     <ArrowLeft class="h-4 w-4" />
                     Back to Forms
                 </Button>
-                
+
                 <div class="flex flex-col space-y-2">
                     <h1 class="text-2xl font-semibold tracking-tight">Edit Form</h1>
                     <p class="text-muted-foreground">Update your form information below.</p>
                 </div>
             </div>
-            
+
             <!-- Form card container -->
             <Card class="max-w-2xl">
                 <CardHeader>
@@ -91,7 +97,7 @@ const submit = () => {
                         Modify your name, date, and optionally update the file.
                     </CardDescription>
                 </CardHeader>
-                
+
                 <CardContent>
                     <!-- Form element -->
                     <form @submit.prevent="submit" class="space-y-6">
@@ -108,7 +114,7 @@ const submit = () => {
                             />
                             <InputError :message="form.errors.name" />
                         </div>
-                        
+
                         <!-- Date input field -->
                         <div class="space-y-2">
                             <Label for="date">Date *</Label>
@@ -121,7 +127,7 @@ const submit = () => {
                             />
                             <InputError :message="form.errors.date" />
                         </div>
-                        
+
                         <!-- Current file display section -->
                         <div v-if="form.file_original_name && !form.file" class="space-y-2">
                             <Label>Current File</Label>
@@ -142,7 +148,7 @@ const submit = () => {
                                 </Button>
                             </div>
                         </div>
-                        
+
                         <!-- File upload field -->
                         <div class="space-y-2">
                             <Label>{{ form.file_original_name ? 'Replace File (Optional)' : 'File Upload (Optional)' }}</Label>
@@ -158,7 +164,7 @@ const submit = () => {
                                 {{ form.file_original_name ? ' - Leave empty to keep current file' : '' }}
                             </p>
                         </div>
-                        
+
                         <!-- Form submission buttons -->
                         <div class="flex gap-4 pt-4">
                             <Button
@@ -169,7 +175,7 @@ const submit = () => {
                                 <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
                                 {{ form.processing ? 'Updating...' : 'Update Form' }}
                             </Button>
-                            
+
                             <Button
                                 type="button"
                                 variant="outline"

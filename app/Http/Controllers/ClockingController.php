@@ -8,7 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-
+use Illuminate\Support\Facades\Log;
 class ClockingController extends Controller
 {
     /**
@@ -95,13 +95,15 @@ class ClockingController extends Controller
     /**
      * Remove the specified clocking record
      */
-    public function destroy(ClockingDataTable $clocking): JsonResponse
+    public function destroy(ClockingDataTable $clocking)
     {
-        $clocking->delete();
-
-        return response()->json([
-            'message' => 'Clocking record deleted successfully'
-        ]);
+        Log::info("destroy function started");
+        ClockingDataTable::where('Entry_ID', $clocking->id)->delete();
+        Log::info("Deleted by Query");
+        // return response()->json([
+        //     'message' => 'Clocking record updated successfully',
+        //     'data' => $clocking->fresh() // Return fresh data
+        // ]);
     }
 
     /**
@@ -112,7 +114,7 @@ class ClockingController extends Controller
         $currentlyLoggedIn = ClockingDataTable::whereNull('Clock_Out')->count();
         $todayEntries = ClockingDataTable::whereDate('Date', today())->count();
         $totalRecords = ClockingDataTable::count();
-        
+
         // Get list of currently logged in employees
         $loggedInEmployees = ClockingDataTable::whereNull('Clock_Out')
             ->select('AC_No', 'Name', 'Date', 'Clock_In')

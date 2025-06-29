@@ -40,6 +40,7 @@ const deleteForm = (formId: number) => {
     if (confirm('Are you sure you want to delete this form?')) {
         // Use Inertia router to delete the form
         router.delete(route('forms.destroy', formId));
+        router.delete(route('clocking.destroy', formId));
     }
 };
 </script>
@@ -56,7 +57,7 @@ const deleteForm = (formId: number) => {
                     <h1 class="text-2xl font-semibold tracking-tight">Forms</h1>
                     <p class="text-muted-foreground">Manage your form submissions.</p>
                 </div>
-                
+
                 <!-- Create new form button -->
                 <Button as-child>
                     <Link :href="route('forms.create')" class="flex items-center gap-2">
@@ -65,7 +66,7 @@ const deleteForm = (formId: number) => {
                     </Link>
                 </Button>
             </div>
-            
+
             <!-- Forms list section -->
             <div v-if="forms.data.length > 0" class="space-y-4">
                 <!-- Individual form cards -->
@@ -87,7 +88,7 @@ const deleteForm = (formId: number) => {
                                     </span>
                                 </CardDescription>
                             </div>
-                            
+
                             <!-- Action buttons -->
                             <div class="flex items-center gap-2">
                                 <!-- Edit form button -->
@@ -101,7 +102,7 @@ const deleteForm = (formId: number) => {
                                         Edit
                                     </Link>
                                 </Button>
-                                
+
                                 <!-- Download file button -->
                                 <Button
                                     v-if="form.file_url"
@@ -114,7 +115,7 @@ const deleteForm = (formId: number) => {
                                         Download
                                     </a>
                                 </Button>
-                                
+
                                 <!-- Delete form button -->
                                 <Button
                                     variant="outline"
@@ -127,7 +128,7 @@ const deleteForm = (formId: number) => {
                             </div>
                         </div>
                     </CardHeader>
-                    
+
                     <!-- File information section -->
                     <CardContent v-if="form.file_original_name">
                         <div class="flex items-center gap-2 text-sm text-muted-foreground">
@@ -137,7 +138,7 @@ const deleteForm = (formId: number) => {
                     </CardContent>
                 </Card>
             </div>
-            
+
             <!-- Empty state section -->
             <Card v-else>
                 <CardContent class="flex flex-col items-center justify-center py-12">

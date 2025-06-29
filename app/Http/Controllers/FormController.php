@@ -6,8 +6,10 @@ use App\Models\Form;
 use App\Services\ClockingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\File;
+use App\Models\ClockingDataTable;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -43,7 +45,7 @@ class FormController extends Controller
         // Handle file upload if present
         $filePath = null;
         $originalName = null;
-        
+
         if ($request->hasFile('file')) {
             $file = $request->file('file');
             $originalName = $file->getClientOriginalName();
@@ -92,7 +94,15 @@ class FormController extends Controller
         if ($form->user_id !== auth()->id()) {
             abort(403);
         }
+        Log::info('Update started');
 
+        $formId = $form->id ;
+
+        Log::info('form id'.$formId);
+
+        ClockingDataTable::where('Entry_ID', $formId)->delete();
+
+        Log::info('Data for form id deleted');
         // Validate form input data
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -103,13 +113,13 @@ class FormController extends Controller
         // Handle file upload if present
         $filePath = $form->file_path; // Keep existing file by default
         $originalName = $form->file_original_name;
-        
+
         if ($request->hasFile('file')) {
             // Delete old file if it exists
             if ($form->file_path) {
                 Storage::disk('public')->delete($form->file_path);
             }
-            
+
             // Store new file
             $file = $request->file('file');
             $originalName = $file->getClientOriginalName();
@@ -164,6 +174,9 @@ class FormController extends Controller
 
         // Delete form record
         $form->delete();
+
+
+
 
         return redirect()->route('forms.index')->with('success', 'Form deleted successfully!');
     }

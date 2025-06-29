@@ -10,14 +10,14 @@ class ExportingController extends Controller{
 
     protected ExportingService $exporting;
 
-    public function __construct(ExportingService $exporting)
-    {
+    public function __construct(ExportingService $exporting){
         $this->exporting = $exporting;
     }
 
     protected array $restrictedModels = [
         'User','Form'
     ];
+
     protected function isRestricted(string $model): bool
     {
         return in_array(ucfirst($model), $this->restrictedModels);

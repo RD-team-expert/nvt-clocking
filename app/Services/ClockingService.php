@@ -58,11 +58,11 @@ class ClockingService
         // $entryNumber = $jsonData['Entry']['Number'] ?? null;
 
         //delete the records with the same entry number
-        ClockingDataTable::where('Entry_Number', $entryNumber)->delete();
+        ClockingDataTable::where('Entry_ID', $entryNumber->id)->delete();
         Log::info("Deleted existing clocking_data rows for Entry_Number = {$entryNumber}");
 
         // use the processClockInOut to store the updated data
-        $this->processClockInOut($dataRows, $entryNumber);
+        $this->processClockInOut($dataRows, $entryNumber->id);
         Log::info('Data Stored in thee Clocking table');
     }
     public function delete($entryNumber){
@@ -74,7 +74,7 @@ class ClockingService
         // $entryNumber = $jsonData['Entry']['Number'] ?? null;
 
         //delete the records with the same entry number
-        ClockingDataTable::where('Entry_Number', $entryNumber)->delete();
+        ClockingDataTable::where('Entry_ID', $entryNumber)->delete();
         Log::info("Deleted existing clocking_data rows for Entry_Number = {$entryNumber}");
 
     }
