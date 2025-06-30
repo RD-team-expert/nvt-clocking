@@ -55,12 +55,7 @@ const submit = () => {
             // Form will redirect to forms.index on success
         },
     });
-    form.post(route('clocking.update', props.form.id), {
-        forceFormData: true, // Required for file uploads
-        onSuccess: () => {
-            // Form will redirect to forms.index on success
-        },
-    });
+
 };
 </script>
 

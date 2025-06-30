@@ -97,9 +97,9 @@ class ClockingController extends Controller
      */
     public function destroy(ClockingDataTable $clocking)
     {
-        Log::info("destroy function started");
-        ClockingDataTable::where('Entry_ID', $clocking->id)->delete();
-        Log::info("Deleted by Query");
+        Log::info("destroy record function started");
+        ClockingDataTable::where('id', $clocking->id)->delete();
+        Log::info("record Deleted by Query");
         // return response()->json([
         //     'message' => 'Clocking record updated successfully',
         //     'data' => $clocking->fresh() // Return fresh data

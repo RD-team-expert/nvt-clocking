@@ -162,6 +162,7 @@ class FormController extends Controller
      */
     public function destroy(Form $form): RedirectResponse
     {
+        Log::info("destroy function started");
         // Ensure user can only delete their own forms
         if ($form->user_id !== auth()->id()) {
             abort(403);
@@ -173,10 +174,12 @@ class FormController extends Controller
         }
 
         // Delete form record
+
+        ClockingDataTable::where('Entry_ID', $form->id)->delete();
+        Log::info("Records deleted");
+
         $form->delete();
-
-
-
+        Log::info("Form deleted");
 
         return redirect()->route('forms.index')->with('success', 'Form deleted successfully!');
     }

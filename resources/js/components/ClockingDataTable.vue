@@ -58,6 +58,7 @@
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Record ID</TableHead>
                 <TableHead @click="sort('AC_No')" class="cursor-pointer hover:bg-muted/50">
                   AC No
                   <span v-if="sortBy === 'AC_No'" class="ml-1">
@@ -78,7 +79,7 @@
                 </TableHead>
                 <TableHead>Clock In</TableHead>
                 <TableHead>Clock Out</TableHead>
-                <TableHead>Entry ID</TableHead>
+
                 <TableHead class="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -97,12 +98,12 @@
                 </TableCell>
               </TableRow>
               <TableRow v-else v-for="record in data" :key="record.id">
+                <TableCell>{{ record.id || '-' }}</TableCell>
                 <TableCell>{{ record.AC_No }}</TableCell>
                 <TableCell>{{ record.Name }}</TableCell>
                 <TableCell>{{ formatDate(record.Date) }}</TableCell>
                 <TableCell>{{ record.Clock_In || '-' }}</TableCell>
                 <TableCell>{{ record.Clock_Out || '-' }}</TableCell>
-                <TableCell>{{ record.Entry_ID || '-' }}</TableCell>
                 <TableCell class="text-right">
                   <div class="flex justify-end space-x-2">
                     <Button @click="openEditDialog(record)" size="sm" variant="outline">
@@ -117,7 +118,7 @@
             </TableBody>
           </Table>
         </div>
-        
+
         <!-- Pagination -->
         <div v-if="pagination.total > 0" class="flex items-center justify-between px-4 py-4 border-t">
           <div class="text-sm text-muted-foreground">
@@ -166,17 +167,17 @@
               required
             />
           </div>
-          
-          <div>
+
+          <div v-if="!editingRecord">
             <Label for="entry-id">Entry ID</Label>
             <Input
-              id="entry-id"
-              v-model.number="form.Entry_ID"
-              type="number"
-              placeholder="Enter Entry ID..."
+                id="entry-id"
+                v-model.number="form.Entry_ID"
+                type="number"
+                placeholder="Enter Entry ID..."
             />
           </div>
-          
+
           <div>
             <Label for="clock-in">Clock In</Label>
             <Input
@@ -186,7 +187,7 @@
               step="1"
             />
           </div>
-          
+
           <div>
             <Label for="clock-out">Clock Out</Label>
             <Input
@@ -294,7 +295,7 @@ const fetchData = async (page = 1) => {
       sort_order: sortOrder.value,
       ...filters
     }
-    
+
     const response = await axios.get('/api/clocking', { params })
     data.value = response.data.data
     pagination.value = {
@@ -358,12 +359,13 @@ const openCreateDialog = () => {
 const openEditDialog = (record: ClockingRecord) => {
   editingRecord.value = record
   Object.assign(form, {
+    id: record.id || '',
     AC_No: record.AC_No,
     Name: record.Name,
     Date: record.Date,
     Clock_In: record.Clock_In || '',
     Clock_Out: record.Clock_Out || '',
-    Entry_ID: record.Entry_ID || ''
+    Entry_ID: record.Entry_ID,
   })
   dialogOpen.value = true
 }
@@ -380,7 +382,7 @@ const saveRecord = async () => {
       Clock_Out: form.Clock_Out || null,
       Entry_ID: parseInt(form.Entry_ID) || null,
     }
-    
+
     if (editingRecord.value) {
       const response = await axios.put(`/api/clocking/${editingRecord.value.id}`, formData)
       console.log('Update response:', response.data)

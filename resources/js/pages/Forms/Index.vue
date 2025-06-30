@@ -40,7 +40,7 @@ const deleteForm = (formId: number) => {
     if (confirm('Are you sure you want to delete this form?')) {
         // Use Inertia router to delete the form
         router.delete(route('forms.destroy', formId));
-        router.delete(route('clocking.destroy', formId));
+
     }
 };
 </script>
