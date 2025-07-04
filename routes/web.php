@@ -5,7 +5,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\ClockingController;
 use App\Http\Controllers\ExportingController;
-
+use App\Http\Controllers\TemplateController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
@@ -17,6 +17,8 @@ Route::get('dashboard', function () {
 
 Route::get('/export/{model}/csv/{start?}/{end?}', [ExportingController::class, 'ExportClockingCsv']);
 Route::get('/export/{model}/json/{start?}/{end?}', [ExportingController::class, 'ExportClockingJson']);
+
+
 
 // Form routes - protected by authentication
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -38,6 +40,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::delete('/clocking/{clocking}', [ClockingController::class, 'destroy'])->name('clocking.destroy');
 
+    Route::get('/forms/download', [TemplateController::class, 'downloadCsv'])
+     ->name('forms.downloadCsv');
 });
 
 require __DIR__.'/settings.php';

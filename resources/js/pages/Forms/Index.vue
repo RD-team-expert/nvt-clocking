@@ -46,7 +46,7 @@ const deleteForm = (formId: number) => {
 </script>
 
 <template>
-    <Head title="Forms" />
+    <Head title="Forms"/>
 
     <!-- Main layout with breadcrumbs -->
     <AppLayout :breadcrumbs="breadcrumbs">
