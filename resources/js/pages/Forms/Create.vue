@@ -88,7 +88,7 @@ function submit() {
                 Please provide your name, select a date, and optionally upload a file.
             </CardDescription>
             </div>
-            <div >
+            <div ><!-- Download button -->
             <Button
             variant="outline"
             size="sm"
@@ -96,7 +96,7 @@ function submit() {
             >Download Template</Button>
             </div>
           </div>
-          <!-- Download button -->
+          
 
         </CardHeader>
         <CardContent>

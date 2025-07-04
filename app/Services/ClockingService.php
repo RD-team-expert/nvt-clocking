@@ -28,34 +28,21 @@ use App\Models\ClockingDataTable;
 class ClockingService
 {
     public function index($filePath,$entryNumber){
-        //get the jason data
-        // $jsonData = $request->json()->all();
-        // Log::info('Received JSON data', ['data' => $jsonData]);
 
-        //calling the proocessFile function to get back the CSV file path
-        // $fileUrl= ['HookDataExcelFile'][0]['File'];
         $dataRows=$this->processFile($filePath);
         Log::info('Received XLS data', ['dataRows' => $dataRows]);
 
-        //Entry Number Value
-        // $entryNumber = $jsonData['Entry']['Number'] ?? null;
 
-        // use the processClockInOut to store the data
         $this->processClockInOut($dataRows, $entryNumber);
         Log::info('Data Stored in thee Clocking table');
     }
 
     public function update($filePath,$entryNumber){
-        //get the jason data
-        // $jsonData = $request->json()->all();
-        // Log::info('Received JSON data', ['data' => $jsonData]);
 
         //calling the proocessFile function to get back the CSV file path
          $dataRows=$this->processFile($filePath);
          Log::info('Received XLS data', ['dataRows' => $dataRows]);
 
-        //Entry Number Value
-        // $entryNumber = $jsonData['Entry']['Number'] ?? null;
 
         //delete the records with the same entry number
         ClockingDataTable::where('Entry_ID', $entryNumber->id)->delete();
@@ -66,13 +53,7 @@ class ClockingService
         Log::info('Data Stored in thee Clocking table');
     }
     public function delete($entryNumber){
-        //get the jason data
-        // $jsonData = $request->json()->all();
-        // Log::info('Received JSON data', ['data' => $jsonData]);
-
-        // get entry number
-        // $entryNumber = $jsonData['Entry']['Number'] ?? null;
-
+        
         //delete the records with the same entry number
         ClockingDataTable::where('Entry_ID', $entryNumber)->delete();
         Log::info("Deleted existing clocking_data rows for Entry_Number = {$entryNumber}");
