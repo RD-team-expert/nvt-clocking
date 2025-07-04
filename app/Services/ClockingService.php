@@ -53,7 +53,7 @@ class ClockingService
         Log::info('Data Stored in thee Clocking table');
     }
     public function delete($entryNumber){
-        
+
         //delete the records with the same entry number
         ClockingDataTable::where('Entry_ID', $entryNumber)->delete();
         Log::info("Deleted existing clocking_data rows for Entry_Number = {$entryNumber}");
@@ -163,41 +163,32 @@ class ClockingService
     {
         // note the first row is already ignored in the processFile function
 
-        // first group the data by AC_No
+        // first, group the data by AC_No
         $grouped = [];
         foreach ($dataRows as $row) {
-            // see if we have the first 4 items
             if (count($row) < 4) {
                 continue;
             }
-            //set the values to the var
-            $acNo   = $row[0];
-            $name   = $row[1];
-            $time   = $row[2];
-            $state  = $row[3];
 
-            //if any or these acNo,time,state then breack the loop
+            [$acNo, $name, $time, $state] = $row;
+
             if (is_null($acNo) || is_null($time) || is_null($state)) {
                 continue;
             }
 
-            // upper case the C/In', 'C/Out
             $stateNorm = strtoupper(trim($state));
-
-            // Only consider "C/IN" or "C/OUT" and breack if other
             if (!in_array($stateNorm, ['C/IN', 'C/OUT'], true)) {
                 continue;
             }
 
-            // use carbon to parse the datetime
             try {
                 $dt = Carbon::parse($time);
             } catch (\Exception $e) {
                 Log::warning('Skipping invalid datetime row', [
-                    'AC_No'   => $acNo,
-                    'Name'    => $name,
-                    'DateTime'=> $time,
-                    'State'   => $state,
+                    'AC_No'    => $acNo,
+                    'Name'     => $name,
+                    'DateTime' => $time,
+                    'State'    => $state,
                 ]);
                 continue;
             }
@@ -206,16 +197,14 @@ class ClockingService
                 'AC_No'    => $acNo,
                 'Name'     => $name,
                 'DateTime' => $dt,
-                'State'    => $stateNorm, // "C/IN" or "C/OUT"
+                'State'    => $stateNorm,
             ];
         }
 
-        // second sorting and pairing
+        // now sort & pair (including standalone C/OUTs)
         foreach ($grouped as $acNo => $events) {
             // sort ascending by datetime
-            usort($events, function ($a, $b) {
-                return $a['DateTime']->timestamp <=> $b['DateTime']->timestamp;
-            });
+            usort($events, fn($a, $b) => $a['DateTime']->timestamp <=> $b['DateTime']->timestamp);
 
             $pendingIn = null;
 
@@ -225,18 +214,18 @@ class ClockingService
                 $name  = $event['Name'];
 
                 if ($state === 'C/IN') {
+                    // if a prior IN was still pending, save it with null OUT
                     if ($pendingIn !== null) {
-                        // We already had an unmatched "In" → save it with null Clock_Out
                         ClockingDataTable::create([
-                            'AC_No'        => $pendingIn['AC_No'],
-                            'Name'         => $pendingIn['Name'],
-                            'Date'         => $pendingIn['DateTime']->toDateString(),
-                            'Clock_In'     => $pendingIn['DateTime']->toTimeString(),
-                            'Clock_Out'    => null,
-                            'Entry_ID' => $entryNumber,
+                            'AC_No'     => $pendingIn['AC_No'],
+                            'Name'      => $pendingIn['Name'],
+                            'Date'      => $pendingIn['DateTime']->toDateString(),
+                            'Clock_In'  => $pendingIn['DateTime']->toTimeString(),
+                            'Clock_Out' => null,
+                            'Entry_ID'  => $entryNumber,
                         ]);
                     }
-                    // Now set this as the new pending "In"
+                    // set new pending IN
                     $pendingIn = [
                         'AC_No'    => $acNo,
                         'Name'     => $name,
@@ -245,36 +234,44 @@ class ClockingService
                 }
                 else if ($state === 'C/OUT') {
                     if ($pendingIn !== null) {
-                        // We have a pending "In" → pair them
+                        // normal pairing: IN → OUT
                         ClockingDataTable::create([
-                            'AC_No'        => $pendingIn['AC_No'],
-                            'Name'         => $pendingIn['Name'],
-                            'Date'         => $pendingIn['DateTime']->toDateString(),
-                            'Clock_In'     => $pendingIn['DateTime']->toTimeString(),
-                            'Clock_Out'    => $dt->toTimeString(),
-                            'Entry_ID' => $entryNumber,
+                            'AC_No'     => $pendingIn['AC_No'],
+                            'Name'      => $pendingIn['Name'],
+                            'Date'      => $pendingIn['DateTime']->toDateString(),
+                            'Clock_In'  => $pendingIn['DateTime']->toTimeString(),
+                            'Clock_Out' => $dt->toTimeString(),
+                            'Entry_ID'  => $entryNumber,
                         ]);
-                        // Clear pendingIn
                         $pendingIn = null;
+                    } else {
+                        // no prior IN → standalone OUT record
+                        ClockingDataTable::create([
+                            'AC_No'     => $acNo,
+                            'Name'      => $name,
+                            'Date'      => $dt->toDateString(),
+                            'Clock_In'  => null,
+                            'Clock_Out' => $dt->toTimeString(),
+                            'Entry_ID'  => $entryNumber,
+                        ]);
                     }
-                    // If pendingIn is null, this is a "C/Out" without "C/In" → skip
                 }
             }
-             // third After iterating, if there’s still an unmatched "In" → store with null Clock_Out
-             if ($pendingIn !== null) {
+
+            // after all events, if an IN is still pending → save with null OUT
+            if ($pendingIn !== null) {
                 ClockingDataTable::create([
-                    'AC_No'        => $pendingIn['AC_No'],
-                    'Name'         => $pendingIn['Name'],
-                    'Date'         => $pendingIn['DateTime']->toDateString(),
-                    'Clock_In'     => $pendingIn['DateTime']->toTimeString(),
-                    'Clock_Out'    => null,
-                    'Entry_ID' => $entryNumber,
+                    'AC_No'     => $pendingIn['AC_No'],
+                    'Name'      => $pendingIn['Name'],
+                    'Date'      => $pendingIn['DateTime']->toDateString(),
+                    'Clock_In'  => $pendingIn['DateTime']->toTimeString(),
+                    'Clock_Out' => null,
+                    'Entry_ID'  => $entryNumber,
                 ]);
-                $pendingIn = null;
             }
         }
-
     }
+
 
     /***************************** Exporting *********************************/
 
