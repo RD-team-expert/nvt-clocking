@@ -18,6 +18,10 @@ const sidebarNavItems: NavItem[] = [
         title: 'Appearance',
         href: '/settings/appearance',
     },
+    {
+        title: 'User Management',
+        href: '/settings/user-management',
+    },
 ];
 
 const page = usePage();
