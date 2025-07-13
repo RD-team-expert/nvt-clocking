@@ -17,7 +17,7 @@ class UserService
     {
         $validated = $request->validate([
             'name'     => 'required|string|max:255',
-            'email'    => 'required|string|lowercase|email|max:255|unique:users',
+            'email'    => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -35,7 +35,7 @@ class UserService
     {
         $rules = [
             'name'  => 'required|string|max:255',
-            'email' => 'required|string|lowercase|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
         ];
 
         if ($request->filled('password')) {
