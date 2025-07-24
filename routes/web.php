@@ -22,12 +22,12 @@ Route::get('/export/{model}/json/{start?}/{end?}', [ExportingController::class, 
 
 // Form routes - protected by authentication
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/forms', [FormController::class, 'index'])->name('forms.index');
-    Route::get('/forms/create', [FormController::class, 'create'])->name('forms.create');
-    Route::post('/forms', [FormController::class, 'store'])->name('forms.store');
-    Route::get('/forms/{form}/edit', [FormController::class, 'edit'])->name('forms.edit');
-    Route::put('/forms/{form}', [FormController::class, 'update'])->name('forms.update');
-    Route::delete('/forms/{form}', [FormController::class, 'destroy'])->name('forms.destroy');
+    Route::get('/forms', [FormController::class, 'index'])->name('forms.index')->middleware('can:forms.index');;
+    Route::get('/forms/create', [FormController::class, 'create'])->name('forms.create')->middleware('can:forms.create');;
+    Route::post('/forms', [FormController::class, 'store'])->name('forms.store')->middleware('can:forms.create');;
+    Route::get('/forms/{form}/edit', [FormController::class, 'edit'])->name('forms.edit')->middleware('can:forms.edit');
+    Route::put('/forms/{form}', [FormController::class, 'update'])->name('forms.update')->middleware('can:forms.edit');
+    Route::delete('/forms/{form}', [FormController::class, 'destroy'])->name('forms.destroy')->middleware('can:forms.destroy');
 
     // Clocking records routes
     Route::get('/api/clocking', [ClockingController::class, 'index'])->name('clocking.index');
@@ -41,7 +41,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/clocking/{clocking}', [ClockingController::class, 'destroy'])->name('clocking.destroy');
 
     Route::get('/forms/download', [TemplateController::class, 'downloadCsv'])
-     ->name('forms.downloadCsv');
+     ->name('forms.downloadCsv')->middleware('can:forms.edit');
 });
 
 require __DIR__.'/settings.php';
