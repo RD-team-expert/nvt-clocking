@@ -6,13 +6,14 @@ use App\Http\Controllers\FormController;
 use App\Http\Controllers\ClockingController;
 use App\Http\Controllers\ExportingController;
 use App\Http\Controllers\TemplateController;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
 Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
+    return Inertia::render('Dashboard',['permissions' => Auth::user()->getAllPermissions(),]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/export/{model}/csv/{start?}/{end?}', [ExportingController::class, 'ExportClockingCsv']);
