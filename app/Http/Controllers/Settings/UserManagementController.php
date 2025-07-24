@@ -9,6 +9,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Permission;
 
 class UserManagementController extends Controller
 {
@@ -19,6 +22,8 @@ class UserManagementController extends Controller
     {
         return Inertia::render('settings/UserManagement', [
             'users' => User::all(),
+            'roles' => Role::with('permissions')->get(),
+            'permissions' => Auth::user()->getAllPermissions(),
         ]);
     }
 
@@ -49,4 +54,38 @@ class UserManagementController extends Controller
             return back()->withErrors($e->errors());
         }
     }
+
+    public function storeRole(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|unique:roles,name',
+            'permissions' => 'array',
+        ]);
+
+        $role = Role::create(['name' => $request->name]);
+
+        $role->syncPermissions($request->permissions);
+
+        return redirect()->route('user-management')->with('success', 'Role created successfully.');
+    }
+
+    public function updateRole(Request $request, Role $role)
+    {
+        $request->validate([
+            'name' => 'required|unique:roles,name,' . $role->id,
+            'permissions' => 'array',
+        ]);
+
+        $role->update(['name' => $request->name]);
+
+        $role->syncPermissions($request->permissions);
+
+        return redirect()->route('user-management')->with('success', 'Role updated successfully.');
+    }
+    public function destroyRole(Role $role)
+    {
+        $role->delete();
+        return redirect()->route('user-management')->with('success', 'Role deleted.');
+    }
+
 }

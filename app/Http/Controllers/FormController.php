@@ -12,6 +12,7 @@ use Illuminate\Validation\Rules\File;
 use App\Models\ClockingDataTable;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Facades\Auth;
 
 class FormController extends Controller
 {
@@ -27,7 +28,7 @@ class FormController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Forms/Create');
+        return Inertia::render('Forms/Create',['permissions' => Auth::user()->getAllPermissions(),]);
     }
 
     /**
@@ -82,6 +83,7 @@ class FormController extends Controller
 
         return Inertia::render('Forms/Edit', [
             'form' => $form,
+            'permissions' => Auth::user()->getAllPermissions(),
         ]);
     }
 
@@ -154,6 +156,7 @@ class FormController extends Controller
 
         return Inertia::render('Forms/Index', [
             'forms' => $forms,
+            'permissions' => Auth::user()->getAllPermissions(),
         ]);
     }
 

@@ -23,6 +23,23 @@ class PermissionsSeeder extends Seeder
             'forms.edit',
             'forms.destroy',
 
+            // Roles
+            'roles.index',
+            'roles.create',
+            'roles.edit',
+            'roles.destroy',
+
+            // Clcoking records
+            'clcokings.index',
+            'clcokings.create',
+            'clcokings.edit',
+            'clcokings.destroy',
+
+            // Users
+            'users.index',
+            'users.create',
+            'users.edit',
+            'users.destroy',
         ];
 
         foreach ($permissions as $permission) {

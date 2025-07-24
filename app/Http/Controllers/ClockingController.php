@@ -110,32 +110,32 @@ class ClockingController extends Controller
      * Get dashboard statistics
      */
    public function getDashboardStats(): JsonResponse
-{
-    // Count stats
-    $currentlyLoggedIn  = ClockingDataTable::whereNull('Clock_Out')->count();
-    $currentlyLoggedOut = ClockingDataTable::whereNull('Clock_In')->count();
-    $todayEntries        = ClockingDataTable::whereDate('Date', today())->count();
-    $totalRecords        = ClockingDataTable::count();
+    {
+        // Count stats
+        $currentlyLoggedIn  = ClockingDataTable::whereNull('Clock_Out')->count();
+        $currentlyLoggedOut = ClockingDataTable::whereNull('Clock_In')->count();
+        $todayEntries        = ClockingDataTable::whereDate('Date', today())->count();
+        $totalRecords        = ClockingDataTable::count();
 
-    // List of employees still logged in
-    $loggedInEmployees = ClockingDataTable::whereNull('Clock_Out')
-        ->select('AC_No', 'Name', 'Date', 'Clock_In')
-        ->orderBy('Clock_In', 'desc')
-        ->get();
+        // List of employees still logged in
+        $loggedInEmployees = ClockingDataTable::whereNull('Clock_Out')
+            ->select('AC_No', 'Name', 'Date', 'Clock_In')
+            ->orderBy('Clock_In', 'desc')
+            ->get();
 
-    // List of employees who have logged out
-    $loggedOutEmployees = ClockingDataTable::whereNull('Clock_In')
-        ->select('AC_No', 'Name', 'Date', 'Clock_Out')
-        ->orderBy('Clock_Out', 'desc')
-        ->get();
+        // List of employees who have logged out
+        $loggedOutEmployees = ClockingDataTable::whereNull('Clock_In')
+            ->select('AC_No', 'Name', 'Date', 'Clock_Out')
+            ->orderBy('Clock_Out', 'desc')
+            ->get();
 
-    return response()->json([
-        'currently_logged_in'   => $currentlyLoggedIn,
-        'logged_in_employees'   => $loggedInEmployees,
-        'currently_logged_out'  => $currentlyLoggedOut,
-        'logged_out_employees'  => $loggedOutEmployees,
-        'today_entries'         => $todayEntries,
-        'total_records'         => $totalRecords,
-    ]);
-}
+        return response()->json([
+            'currently_logged_in'   => $currentlyLoggedIn,
+            'logged_in_employees'   => $loggedInEmployees,
+            'currently_logged_out'  => $currentlyLoggedOut,
+            'logged_out_employees'  => $loggedOutEmployees,
+            'today_entries'         => $todayEntries,
+            'total_records'         => $totalRecords,
+        ]);
+    }
 }
