@@ -20,8 +20,10 @@ class UserManagementController extends Controller
     /** Display the management page */
     public function index(): Response
     {
+        $users = User::with(['roles.permissions', 'permissions'])->get();
+
         return Inertia::render('settings/UserManagement', [
-            'users' => User::all(),
+            'users' => $users,
             'roles' => Role::with('permissions')->get(),
             'permissions' => Auth::user()->getAllPermissions(),
         ]);
@@ -30,6 +32,7 @@ class UserManagementController extends Controller
     /** Store a new user */
     public function store(Request $request): RedirectResponse
     {
+        
         $this->userService->create($request);
         return back();
     }
@@ -37,6 +40,7 @@ class UserManagementController extends Controller
     /** Update an existing user */
     public function update(Request $request, string $id): RedirectResponse
     {
+        dd($request->all());
         $user = User::findOrFail($id);
         $this->userService->update($request, $user);
         return back();

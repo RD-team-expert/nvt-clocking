@@ -12,7 +12,7 @@ use Illuminate\Validation\Rules\File;
 use App\Models\ClockingDataTable;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Facades\Auth;
+use Illuminate\Support\Facades\Auth;
 
 class FormController extends Controller
 {
