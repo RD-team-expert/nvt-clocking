@@ -40,7 +40,6 @@ class UserManagementController extends Controller
     /** Update an existing user */
     public function update(Request $request, string $id): RedirectResponse
     {
-        dd($request->all());
         $user = User::findOrFail($id);
         $this->userService->update($request, $user);
         return back();

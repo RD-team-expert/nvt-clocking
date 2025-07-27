@@ -17,15 +17,25 @@ interface Form {
     created_at: string;
 }
 
+interface Permission {
+    id: number;
+    name: string;
+    guard_name: string;
+    created_at: string;
+    updated_at: string;
+    pivot: any;
+}
+
 interface Props {
     forms: {
         data: Form[];
         links: any[];
         meta: any;
     };
+    permissions?: Permission[];
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 // Breadcrumb navigation setup
 const breadcrumbs: BreadcrumbItem[] = [
@@ -40,8 +50,13 @@ const deleteForm = (formId: number) => {
     if (confirm('Are you sure you want to delete this form?')) {
         // Use Inertia router to delete the form
         router.delete(route('forms.destroy', formId));
-
     }
+};
+
+// Helper functions to check permissions
+const can = (permissionName: string): boolean => {
+    if (!props.permissions) return false;
+    return props.permissions.some(permission => permission.name === permissionName);
 };
 </script>
 
@@ -58,8 +73,8 @@ const deleteForm = (formId: number) => {
                     <p class="text-muted-foreground">Manage your form submissions.</p>
                 </div>
 
-                <!-- Create new form button -->
-                <Button as-child>
+                <!-- Create new form button - only show if user has forms.create permission -->
+                <Button v-if="can('forms.create')" as-child>
                     <Link :href="route('forms.create')" class="flex items-center gap-2">
                         <Plus class="h-4 w-4" />
                         Create Form
@@ -91,8 +106,9 @@ const deleteForm = (formId: number) => {
 
                             <!-- Action buttons -->
                             <div class="flex items-center gap-2">
-                                <!-- Edit form button -->
+                                <!-- Edit form button - only show if user has forms.edit permission -->
                                 <Button
+                                    v-if="can('forms.edit')"
                                     variant="outline"
                                     size="sm"
                                     as-child
@@ -103,7 +119,7 @@ const deleteForm = (formId: number) => {
                                     </Link>
                                 </Button>
 
-                                <!-- Download file button -->
+                                <!-- Download file button - always visible as it's not permission-restricted -->
                                 <Button
                                     v-if="form.file_url"
                                     variant="outline"
@@ -116,8 +132,9 @@ const deleteForm = (formId: number) => {
                                     </a>
                                 </Button>
 
-                                <!-- Delete form button -->
+                                <!-- Delete form button - only show if user has forms.destroy permission -->
                                 <Button
+                                    v-if="can('forms.destroy')"
                                     variant="outline"
                                     size="sm"
                                     @click="deleteForm(form.id)"
@@ -145,9 +162,10 @@ const deleteForm = (formId: number) => {
                     <File class="h-12 w-12 text-muted-foreground mb-4" />
                     <h3 class="text-lg font-medium mb-2">No forms yet</h3>
                     <p class="text-muted-foreground text-center mb-4">
-                        You haven't created any forms yet. Get started by creating your first form.
+                        You haven't created any forms yet.
+                        <template v-if="can('forms.create')">Get started by creating your first form.</template>
                     </p>
-                    <Button as-child>
+                    <Button v-if="can('forms.create')" as-child>
                         <Link :href="route('forms.create')" class="flex items-center gap-2">
                             <Plus class="h-4 w-4" />
                             Create Your First Form

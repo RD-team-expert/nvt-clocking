@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import { toast, Toaster } from 'vue-sonner';
+import { toast } from 'vue-sonner';
 
 import HeadingSmall from '@/components/HeadingSmall.vue';
 import InputError from '@/components/InputError.vue';
@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
-import { type BreadcrumbItem, type User, type Role, type Permission } from '@/types';
+import { type BreadcrumbItem, type Permission, type Role, type User } from '@/types';
 
 interface Props {
     users: User[];
@@ -36,8 +36,8 @@ const createUserForm = useForm({
     email: '',
     password: '',
     password_confirmation: '',
-    role_id: '',
     roles: [] as string[],
+    permissions: [] as string[],
 });
 
 const editUserForm = useForm({
@@ -46,8 +46,8 @@ const editUserForm = useForm({
     email: '',
     password: '',
     password_confirmation: '',
-    role_id: '',
     roles: [] as string[],
+    permissions: [] as string[],
 });
 
 // Forms for roles
@@ -126,7 +126,7 @@ const validateCreateForm = (): boolean => {
         email: '',
         password: '',
         password_confirmation: '',
-        role_id: '',
+        role_id: '', // Keep for compatibility but won't be used
     };
 
     if (!createUserForm.name.trim()) {
@@ -158,11 +158,6 @@ const validateCreateForm = (): boolean => {
         isValid = false;
     }
 
-    if (!createUserForm.role_id) {
-        createErrors.value.role_id = 'Role is required';
-        isValid = false;
-    }
-
     return isValid;
 };
 
@@ -173,7 +168,7 @@ const validateEditForm = (): boolean => {
         email: '',
         password: '',
         password_confirmation: '',
-        role_id: '',
+        role_id: '', // Keep for compatibility but won't be used
     };
 
     if (!editUserForm.name.trim()) {
@@ -202,11 +197,6 @@ const validateEditForm = (): boolean => {
             editErrors.value.password_confirmation = 'Passwords do not match';
             isValid = false;
         }
-    }
-
-    if (!editUserForm.role_id) {
-        editErrors.value.role_id = 'Role is required';
-        isValid = false;
     }
 
     return isValid;
@@ -251,22 +241,7 @@ const validatePermissionForm = (form: typeof createPermissionForm | typeof editP
 const submitCreateForm = () => {
     if (!validateCreateForm()) return;
 
-    // Find the role name from the ID
-    const role = props.roles.find(r => r.id === Number(createUserForm.role_id));
-    const roleName = role ? role.name : '';
-
-    // Prepare the data to send
-    const formData = {
-        name: createUserForm.name,
-        email: createUserForm.email,
-        password: createUserForm.password,
-        password_confirmation: createUserForm.password_confirmation,
-        role_id: createUserForm.role_id,
-        roles: roleName ? [roleName] : []
-    };
-
     createUserForm.post(route('users.store'), {
-        data: formData,
         onSuccess: () => {
             showCreateDialog.value = false;
             createUserForm.reset();
@@ -282,35 +257,28 @@ const editUser = (user: User) => {
     editUserForm.email = user.email;
     editUserForm.password = '';
     editUserForm.password_confirmation = '';
-    editUserForm.role_id = user.role_id ? String(user.role_id) : '';
-    editUserForm.roles = user.roles?.map(r => r.name) || [];
+    editUserForm.roles = user.roles?.map((r) => r.name) || [];
+    // Get direct permissions (not inherited from roles)
+    editUserForm.permissions = user.permissions?.map((p) => p.name) || [];
     showEditDialog.value = true;
 };
 
 const submitEditForm = () => {
     if (!validateEditForm()) return;
 
-    // Find the role name from the ID
-    const role = props.roles.find(r => r.id === Number(editUserForm.role_id));
-    const roleName = role ? role.name : '';
-
-    // Prepare the data to send
-    const formData = {
-        name: editUserForm.name,
-        email: editUserForm.email,
-        password: editUserForm.password,
-        password_confirmation: editUserForm.password_confirmation,
-        role_id: editUserForm.role_id,
-        roles: roleName ? [roleName] : []
-    };
-
     editUserForm.put(route('users.update', { id: editUserForm.id }), {
-        data: formData,
         onSuccess: () => {
             showEditDialog.value = false;
             toast.success('User updated successfully');
         },
     });
+};
+
+// Helper function to check if permission is inherited from selected roles
+const isPermissionInheritedFromRoles = (permissionName: string, selectedRoles: string[]): boolean => {
+    return props.roles
+        .filter((role) => selectedRoles.includes(role.name))
+        .some((role) => role.permissions?.some((permission) => permission.name === permissionName));
 };
 
 const confirmDeleteUser = (user: User) => {
@@ -340,7 +308,7 @@ const editRole = (role: Role) => {
     selectedRole.value = role;
     editRoleForm.id = String(role.id);
     editRoleForm.name = role.name;
-    editRoleForm.permissions = role.permissions?.map(p => String(p.name)) || [];
+    editRoleForm.permissions = role.permissions?.map((p) => String(p.name)) || [];
     showEditRoleDialog.value = true;
 };
 
@@ -448,6 +416,12 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
         form.permissions.splice(index, 1);
     }
 };
+
+// Helper function to check if user has a specific permission
+const can = (permissionName: string): boolean => {
+    if (!props.permissions) return false;
+    return props.permissions.some(permission => permission.name === permissionName);
+};
 </script>
 
 <template>
@@ -457,14 +431,14 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
         <SettingsLayout>
             <div class="flex flex-col space-y-6">
                 <!-- Users Section -->
-                <div class="flex items-center justify-between">
+                <div v-if="can('users.index')" class="flex items-center justify-between">
                     <HeadingSmall title="User Management" description="Create, edit and manage users" />
 
                     <Dialog v-model:open="showCreateDialog">
                         <DialogTrigger asChild>
-                            <Button>Add New User</Button>
+                            <Button v-if="can('users.create')">Add New User</Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent class="md:max-w-2xl">
                             <DialogHeader>
                                 <DialogTitle>Create New User</DialogTitle>
                                 <DialogDescription> Fill in the details to create a new user account. </DialogDescription>
@@ -496,12 +470,48 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
                                 </div>
 
                                 <div>
-                                    <Label for="role_id">Role</Label>
-                                    <select id="role_id" v-model="createUserForm.role_id" class="w-full border rounded-md p-2">
-                                        <option value="">Select a role</option>
-                                        <option v-for="role in props.roles" :key="role.id" :value="role.id">{{ role.name }}</option>
-                                    </select>
-                                    <InputError :message="createUserForm.errors.role_id || createErrors.role_id" />
+                                    <Label>Roles</Label>
+                                    <div class="mt-2 border border-gray-700/25 dark:border-gray-300/25 p-1 rounded-md grid max-h-32 grid-cols-2 gap-2 overflow-y-auto">
+                                        <div v-for="role in props.roles" :key="role.id" class="flex items-center space-x-2">
+                                            <input
+                                                type="checkbox"
+                                                :id="`create-role-${role.id}`"
+                                                :value="role.name"
+                                                v-model="createUserForm.roles"
+                                                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                            />
+                                            <Label :for="`create-role-${role.id}`">{{ role.name }}</Label>
+                                        </div>
+                                    </div>
+                                    <InputError :message="createUserForm.errors.roles" />
+                                </div>
+
+                                <div>
+                                    <Label>Direct Permissions</Label>
+                                    <div class="mt-2 border border-gray-700/25 dark:border-gray-300/25 p-1 rounded-md grid max-h-32 grid-cols-2 gap-2 overflow-y-auto">
+                                        <div v-for="permission in props.permissions" :key="permission.id" class="flex items-center space-x-2">
+                                            <input
+                                                type="checkbox"
+                                                :id="`create-permission-${permission.id}`"
+                                                :value="permission.name"
+                                                v-model="createUserForm.permissions"
+                                                :disabled="isPermissionInheritedFromRoles(permission.name, createUserForm.roles)"
+                                                class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+                                            />
+                                            <Label
+                                                :for="`create-permission-${permission.id}`"
+                                                :class="{
+                                                    'text-gray-500 italic': isPermissionInheritedFromRoles(permission.name, createUserForm.roles),
+                                                }"
+                                            >
+                                                {{ permission.name }}
+                                                <span v-if="isPermissionInheritedFromRoles(permission.name, createUserForm.roles)" class="text-xs"
+                                                    >(inherited)</span
+                                                >
+                                            </Label>
+                                        </div>
+                                    </div>
+                                    <InputError :message="createUserForm.errors.permissions" />
                                 </div>
 
                                 <DialogFooter>
@@ -513,7 +523,7 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
                     </Dialog>
                 </div>
 
-                <Card>
+                <Card v-if="can('users.index')">
                     <CardHeader>
                         <CardTitle>Users</CardTitle>
                         <CardDescription>Manage your system users</CardDescription>
@@ -532,10 +542,22 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
                                 <TableRow v-for="user in props.users" :key="user.id">
                                     <TableCell>{{ user.name }}</TableCell>
                                     <TableCell>{{ user.email }}</TableCell>
-                                    <TableCell>{{ user.roles[0]?.name || 'No role' }}</TableCell>
+                                    <TableCell>
+                                        <div class="flex flex-wrap gap-1 md:gap-2">
+                                            <span
+                                                v-for="role in user.roles"
+                                                :key="role.id"
+                                                class="rounded-full bg-[#84a4f9] dark:bg-[#325ba8]  px-4 md:px-2 py-1 text-xs text-black dark:text-white"
+                                            >
+                                                {{ role.name }}
+                                            </span>
+                                            <span v-if="!user.roles?.length" class="text-gray-400">No roles</span>
+                                        </div>
+                                    </TableCell>
+
                                     <TableCell class="text-right">
-                                        <Button variant="ghost" size="sm" @click="editUser(user)" class="mr-2">Edit</Button>
-                                        <Button variant="destructive" size="sm" @click="confirmDeleteUser(user)">Delete</Button>
+                                        <Button v-if="can('users.edit')" variant="ghost" size="sm" @click="editUser(user)" class="mr-2">Edit</Button>
+                                        <Button v-if="can('users.destroy')" variant="destructive" size="sm" @click="confirmDeleteUser(user)">Delete</Button>
                                     </TableCell>
                                 </TableRow>
                             </TableBody>
@@ -544,14 +566,14 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
                 </Card>
 
                 <!-- Roles Section -->
-                <div class="flex items-center justify-between">
+                <div v-if="can('roles.index')" class="flex items-center justify-between">
                     <HeadingSmall title="Role Management" description="Create, edit and manage roles" />
 
                     <Dialog v-model:open="showCreateRoleDialog">
                         <DialogTrigger asChild>
-                            <Button @click="createRole">Add New Role</Button>
+                            <Button v-if="can('roles.create')" @click="createRole">Add New Role</Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent class="md:max-w-2xl">
                             <DialogHeader>
                                 <DialogTitle>Create New Role</DialogTitle>
                                 <DialogDescription> Fill in the details to create a new role. </DialogDescription>
@@ -566,12 +588,12 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
 
                                 <div>
                                     <Label>Permissions</Label>
-                                    <div class="grid grid-cols-2 gap-2 mt-2">
+                                    <div class="mt-2 border border-gray-700/25 dark:border-gray-300/25 p-1 rounded-md grid grid-cols-2 gap-2">
                                         <div v-for="permission in props.permissions" :key="permission.id" class="flex items-center space-x-2">
-                                            <input 
-                                                type="checkbox" 
-                                                :id="`permission-${permission.id}`" 
-                                                :value="permission.name" 
+                                            <input
+                                                type="checkbox"
+                                                :id="`permission-${permission.id}`"
+                                                :value="permission.name"
                                                 v-model="createRoleForm.permissions"
                                                 class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                             />
@@ -590,7 +612,7 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
                     </Dialog>
                 </div>
 
-                <Card>
+                <Card v-if="can('roles.index')">
                     <CardHeader>
                         <CardTitle>Roles</CardTitle>
                         <CardDescription>Manage your system roles</CardDescription>
@@ -608,16 +630,20 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
                                 <TableRow v-for="role in props.roles" :key="role.id">
                                     <TableCell>{{ role.name }}</TableCell>
                                     <TableCell>
-                                        <div class="flex flex-wrap gap-1">
-                                            <span v-for="permission in role.permissions" :key="permission.id" class="px-2 py-1 text-xs rounded-full text-black bg-gray-100">
+                                        <div class="flex flex-wrap gap-1 md:gap-2">
+                                            <span
+                                                v-for="permission in role.permissions"
+                                                :key="permission.id"
+                                                class="rounded-full bg-[#84a4f9] dark:bg-[#325ba8] px-2 py-1 text-xs text-black dark:text-white"
+                                            >
                                                 {{ permission.name }}
                                             </span>
                                             <span v-if="!role.permissions?.length" class="text-gray-400">No permissions</span>
                                         </div>
                                     </TableCell>
                                     <TableCell class="text-right">
-                                        <Button variant="ghost" size="sm" @click="editRole(role)" class="mr-2">Edit</Button>
-                                        <Button variant="destructive" size="sm" @click="confirmDeleteRole(role)">Delete</Button>
+                                        <Button v-if="can('roles.edit')" variant="ghost" size="sm" @click="editRole(role)" class="mr-2">Edit</Button>
+                                        <Button v-if="can('roles.destroy')" variant="destructive" size="sm" @click="confirmDeleteRole(role)">Delete</Button>
                                     </TableCell>
                                 </TableRow>
                             </TableBody>
@@ -627,7 +653,7 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
 
                 <!-- Dialogs for Users -->
                 <Dialog v-model:open="showEditDialog">
-                    <DialogContent>
+                    <DialogContent class="md:max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>Edit User</DialogTitle>
                             <DialogDescription> Update user information. </DialogDescription>
@@ -659,12 +685,46 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
                             </div>
 
                             <div>
-                                <Label for="edit-role_id">Role</Label>
-                                <select id="edit-role_id" v-model="editUserForm.role_id" class="w-full border rounded-md p-2">
-                                    <option value="">Select a role</option>
-                                    <option v-for="role in props.roles" :key="role.id" :value="role.id">{{ role.name }}</option>
-                                </select>
-                                <InputError :message="editUserForm.errors.role_id || editErrors.role_id" />
+                                <Label>Roles</Label>
+                                <div class="mt-2 border border-gray-700/25 dark:border-gray-300/25 p-1 rounded-md grid max-h-32 grid-cols-2 gap-2 overflow-y-auto">
+                                    <div v-for="role in props.roles" :key="role.id" class="flex items-center space-x-2">
+                                        <input
+                                            type="checkbox"
+                                            :id="`edit-role-${role.id}`"
+                                            :value="role.name"
+                                            v-model="editUserForm.roles"
+                                            class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                        />
+                                        <Label :for="`edit-role-${role.id}`">{{ role.name }}</Label>
+                                    </div>
+                                </div>
+                                <InputError :message="editUserForm.errors.roles" />
+                            </div>
+
+                            <div>
+                                <Label>Direct Permissions</Label>
+                                <div class="mt-2 border border-gray-700/25 dark:border-gray-300/25 p-1 rounded-md grid max-h-32 grid-cols-2 gap-2 overflow-y-auto">
+                                    <div v-for="permission in props.permissions" :key="permission.id" class="flex items-center space-x-2">
+                                        <input
+                                            type="checkbox"
+                                            :id="`edit-permission-${permission.id}`"
+                                            :value="permission.name"
+                                            v-model="editUserForm.permissions"
+                                            :disabled="isPermissionInheritedFromRoles(permission.name, editUserForm.roles)"
+                                            class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
+                                        />
+                                        <Label
+                                            :for="`edit-permission-${permission.id}`"
+                                            :class="{ 'text-gray-500 italic': isPermissionInheritedFromRoles(permission.name, editUserForm.roles) }"
+                                        >
+                                            {{ permission.name }}
+                                            <span v-if="isPermissionInheritedFromRoles(permission.name, editUserForm.roles)" class="text-xs"
+                                                >(inherited)</span
+                                            >
+                                        </Label>
+                                    </div>
+                                </div>
+                                <InputError :message="editUserForm.errors.permissions" />
                             </div>
 
                             <DialogFooter>
@@ -676,7 +736,7 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
                 </Dialog>
 
                 <Dialog v-model:open="showDeleteDialog">
-                    <DialogContent>
+                    <DialogContent class="md:max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>Delete User</DialogTitle>
                             <DialogDescription> Are you sure you want to delete this user? This action cannot be undone. </DialogDescription>
@@ -691,7 +751,7 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
 
                 <!-- Dialogs for Roles -->
                 <Dialog v-model:open="showEditRoleDialog">
-                    <DialogContent>
+                    <DialogContent class="md:max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>Edit Role</DialogTitle>
                             <DialogDescription> Update role information. </DialogDescription>
@@ -706,12 +766,12 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
 
                             <div>
                                 <Label>Permissions</Label>
-                                <div class="grid grid-cols-2 gap-2 mt-2">
+                                <div class="mt-2 border border-gray-700/25 dark:border-gray-300/25 p-1 rounded-md grid grid-cols-2 gap-2">
                                     <div v-for="permission in props.permissions" :key="permission.id" class="flex items-center space-x-2">
-                                        <input 
-                                            type="checkbox" 
-                                            :id="`edit-permission-${permission.id}`" 
-                                            :value="permission.name" 
+                                        <input
+                                            type="checkbox"
+                                            :id="`edit-permission-${permission.id}`"
+                                            :value="permission.name"
                                             v-model="editRoleForm.permissions"
                                             class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                         />
@@ -730,7 +790,7 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
                 </Dialog>
 
                 <Dialog v-model:open="showDeleteRoleDialog">
-                    <DialogContent>
+                    <DialogContent class="md:max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>Delete Role</DialogTitle>
                             <DialogDescription> Are you sure you want to delete this role? This action cannot be undone. </DialogDescription>
@@ -745,7 +805,7 @@ const togglePermission = (permissionId: string, form: typeof createRoleForm | ty
 
                 <!-- Dialogs for Permissions -->
                 <Dialog v-model:open="showDeletePermissionDialog">
-                    <DialogContent>
+                    <DialogContent class="md:max-w-2xl">
                         <DialogHeader>
                             <DialogTitle>Delete Permission</DialogTitle>
                             <DialogDescription> Are you sure you want to delete this permission? This action cannot be undone. </DialogDescription>
