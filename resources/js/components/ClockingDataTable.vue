@@ -46,7 +46,8 @@
         </div>
         <div class="flex justify-between items-center mt-4">
           <Button @click="clearFilters" variant="outline">Clear Filters</Button>
-          <Button @click="openCreateDialog">Add New Record</Button>
+          <!-- Only show Add New Record button if user has create permission -->
+          <Button v-if="canCreate" @click="openCreateDialog">Add New Record</Button>
         </div>
       </CardContent>
     </Card>
@@ -79,13 +80,13 @@
                 </TableHead>
                 <TableHead>Clock In</TableHead>
                 <TableHead>Clock Out</TableHead>
-
-                <TableHead class="text-right">Actions</TableHead>
+                <!-- Only show Actions column if user has edit or delete permissions -->
+                <TableHead v-if="canEdit || canDelete" class="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow v-if="loading">
-                <TableCell colspan="7" class="text-center py-8">
+                <TableCell :colspan="(canEdit || canDelete) ? 7 : 6" class="text-center py-8">
                   <div class="flex items-center justify-center space-x-2">
                     <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                     <span>Loading...</span>
@@ -93,7 +94,7 @@
                 </TableCell>
               </TableRow>
               <TableRow v-else-if="data.length === 0">
-                <TableCell colspan="7" class="text-center py-8 text-muted-foreground">
+                <TableCell :colspan="(canEdit || canDelete) ? 7 : 6" class="text-center py-8 text-muted-foreground">
                   No records found
                 </TableCell>
               </TableRow>
@@ -104,12 +105,13 @@
                 <TableCell>{{ formatDate(record.Date) }}</TableCell>
                 <TableCell>{{ record.Clock_In || '-' }}</TableCell>
                 <TableCell>{{ record.Clock_Out || '-' }}</TableCell>
-                <TableCell class="text-right">
+                <!-- Only show Actions cell if user has edit or delete permissions -->
+                <TableCell v-if="canEdit || canDelete" class="text-right">
                   <div class="flex justify-end space-x-2">
-                    <Button @click="openEditDialog(record)" size="sm" variant="outline">
+                    <Button v-if="canEdit" @click="openEditDialog(record)" size="sm" variant="outline">
                       Edit
                     </Button>
-                    <Button @click="deleteRecord(record.id)" size="sm" variant="destructive">
+                    <Button v-if="canDelete" @click="deleteRecord(record.id)" size="sm" variant="destructive">
                       Delete
                     </Button>
                   </div>
@@ -149,8 +151,8 @@
       </CardContent>
     </Card>
 
-    <!-- Edit/Create Dialog -->
-    <Dialog v-model:open="dialogOpen">
+    <!-- Edit/Create Dialog - Only render if user has create or edit permissions -->
+    <Dialog v-if="canCreate || canEdit" v-model:open="dialogOpen">
       <DialogContent class="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{{ editingRecord ? 'Edit Record' : 'Create New Record' }}</DialogTitle>
@@ -229,6 +231,32 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+
+interface Permission {
+  id: number;
+  name: string;
+  guard_name: string;
+  created_at: string;
+  updated_at: string;
+  pivot: any;
+}
+
+interface Props {
+  permissions?: Permission[];
+}
+
+const props = defineProps<Props>();
+
+// Permission check function
+const can = (permissionName: string): boolean => {
+  if (!props.permissions) return false;
+  return props.permissions.some(permission => permission.name === permissionName);
+};
+
+// Permission-based computed properties
+const canCreate = computed(() => can('clcokings.create'));
+const canEdit = computed(() => can('clcokings.edit'));
+const canDelete = computed(() => can('clcokings.destroy'));
 
 interface ClockingRecord {
   id: number

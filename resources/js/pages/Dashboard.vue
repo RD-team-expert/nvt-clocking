@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
 import ClockingDataTable from '@/components/ClockingDataTable.vue';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-vue-next';
 
 interface Employee {
   AC_No: string;
@@ -15,9 +17,34 @@ interface Employee {
   Clock_Out: string;
 }
 
+interface Permission {
+  id: number;
+  name: string;
+  guard_name: string;
+  created_at: string;
+  updated_at: string;
+  pivot: any;
+}
+
+interface Props {
+  permissions?: Permission[];
+}
+
+const props = defineProps<Props>();
+
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Dashboard', href: '/dashboard' },
 ];
+
+// Check permissions
+const can = (permissionName: string): boolean => {
+  if (!props.permissions) return false;
+  return props.permissions.some(permission => permission.name === permissionName);
+};
+console.log(props.permissions);
+
+// Check if user has clocking.index permission
+const hasClockingIndexPermission = computed(() => can('clcokings.index'));
 
 // Reactive stats
 const loading = ref(false);
@@ -33,6 +60,8 @@ const currentlyLoggedOut = ref(0);
 const loggedOutEmployees = ref<Employee[]>([]);
 
 const fetchStats = async () => {
+  if (!hasClockingIndexPermission.value) return;
+  
   loading.value = true;
   try {
     const { data } = await axios.get('/api/dashboard-stats');
@@ -56,7 +85,19 @@ onMounted(fetchStats);
   <Head title="Dashboard" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
-    <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+    <!-- Error message when user doesn't have clocking.index permission -->
+    <div v-if="!hasClockingIndexPermission" class="flex h-full flex-1 flex-col items-center justify-center p-4">
+      <Alert variant="destructive" class="max-w-md">
+        <AlertCircle class="h-4 w-4" />
+        <AlertTitle>Access Denied</AlertTitle>
+        <AlertDescription>
+          You don't have permission to view this dashboard. Please contact your administrator.
+        </AlertDescription>
+      </Alert>
+    </div>
+    
+    <!-- Dashboard content when user has clocking.index permission -->
+    <div v-else class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <!-- Currently Logged In -->
@@ -147,8 +188,9 @@ onMounted(fetchStats);
         </Card>
       </div>
 
-      <div class="flex-1">
-        <ClockingDataTable />
+      <!-- Only show ClockingDataTable if user has necessary permissions -->
+      <div  class="flex-1">
+        <ClockingDataTable :permissions="props.permissions" />
       </div>
     </div>
   </AppLayout>
