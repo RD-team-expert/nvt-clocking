@@ -1,0 +1,31 @@
+import{d as C,b as y,e as o,f as t,u as e,q as D,w as a,j as r,g as i,h as c,S as h,i as d,F as p,k as I,t as _,W as S}from"./app-SFb2zInB.js";import{_ as $}from"./AppLayout.vue_vue_type_script_setup_true_lang-CQmFckDX.js";import{c as f,_ as u}from"./index-CbHqO0W5.js";import{_ as k,a as j,b as V,c as g}from"./CardTitle.vue_vue_type_script_setup_true_lang-DFtRfmVV.js";import{_ as N}from"./CardDescription.vue_vue_type_script_setup_true_lang-DDBHt1fo.js";import{F as v}from"./file-Bq8KTq2i.js";import"./useForwardExpose-QsExlC0D.js";import"./RovingFocusGroup-7AlOQywy.js";/**
+ * @license lucide-vue-next v0.468.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const q=f("CalendarIcon",[["path",{d:"M8 2v4",key:"1cmpym"}],["path",{d:"M16 2v4",key:"4m81vk"}],["rect",{width:"18",height:"18",x:"3",y:"4",rx:"2",key:"1hopcy"}],["path",{d:"M3 10h18",key:"8toen8"}]]);/**
+ * @license lucide-vue-next v0.468.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const z=f("DownloadIcon",[["path",{d:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4",key:"ih7n3h"}],["polyline",{points:"7 10 12 15 17 10",key:"2ggqvy"}],["line",{x1:"12",x2:"12",y1:"15",y2:"3",key:"1vk2je"}]]);/**
+ * @license lucide-vue-next v0.468.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const w=f("PlusIcon",[["path",{d:"M5 12h14",key:"1ays0h"}],["path",{d:"M12 5v14",key:"s699le"}]]);/**
+ * @license lucide-vue-next v0.468.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const B=f("SquarePenIcon",[["path",{d:"M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7",key:"1m0v6g"}],["path",{d:"M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z",key:"ohrbg2"}]]);/**
+ * @license lucide-vue-next v0.468.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const H=f("Trash2Icon",[["path",{d:"M3 6h18",key:"d0wm0j"}],["path",{d:"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6",key:"4alrt4"}],["path",{d:"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2",key:"v07s0e"}],["line",{x1:"10",x2:"10",y1:"11",y2:"17",key:"1uufr5"}],["line",{x1:"14",x2:"14",y1:"11",y2:"17",key:"xtxkd"}]]);/**
+ * @license lucide-vue-next v0.468.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const L=f("UserIcon",[["path",{d:"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2",key:"975kel"}],["circle",{cx:"12",cy:"7",r:"4",key:"17ys0d"}]]),P={class:"flex h-full flex-1 flex-col gap-4 rounded-xl p-4"},T={class:"flex items-center justify-between"},E={key:0,class:"space-y-4"},U={class:"flex items-center justify-between"},W={class:"flex items-center gap-1"},Y={class:"text-xs"},A={class:"flex items-center gap-2"},G=["href","download"],J={class:"flex items-center gap-2 text-sm text-muted-foreground"},K={class:"text-muted-foreground text-center mb-4"},re=C({__name:"Index",props:{forms:{},permissions:{}},setup(b){const x=b,M=[{title:"Forms",href:"/forms"}],F=n=>{confirm("Are you sure you want to delete this form?")&&S.delete(route("forms.destroy",n))},m=n=>x.permissions?x.permissions.some(s=>s.name===n):!1;return(n,s)=>(o(),y(p,null,[t(e(D),{title:"Forms"}),t($,{breadcrumbs:M},{default:a(()=>[r("div",P,[r("div",T,[s[1]||(s[1]=r("div",{class:"flex flex-col space-y-2"},[r("h1",{class:"text-2xl font-semibold tracking-tight"},"Forms"),r("p",{class:"text-muted-foreground"},"Manage your form submissions.")],-1)),m("forms.create")?(o(),i(e(u),{key:0,"as-child":""},{default:a(()=>[t(e(h),{href:n.route("forms.create"),class:"flex items-center gap-2"},{default:a(()=>[t(e(w),{class:"h-4 w-4"}),s[0]||(s[0]=d(" Create Form "))]),_:1,__:[0]},8,["href"])]),_:1})):c("",!0)]),n.forms.data.length>0?(o(),y("div",E,[(o(!0),y(p,null,I(n.forms.data,l=>(o(),i(e(k),{key:l.id},{default:a(()=>[t(e(j),null,{default:a(()=>[r("div",U,[r("div",null,[t(e(V),{class:"flex items-center gap-2"},{default:a(()=>[t(e(L),{class:"h-4 w-4"}),d(" "+_(l.name),1)]),_:2},1024),t(e(N),{class:"flex items-center gap-4 mt-1"},{default:a(()=>[r("span",W,[t(e(q),{class:"h-3 w-3"}),d(" "+_(new Date(l.date).toLocaleDateString()),1)]),r("span",Y," Submitted: "+_(new Date(l.created_at).toLocaleDateString()),1)]),_:2},1024)]),r("div",A,[m("forms.edit")?(o(),i(e(u),{key:0,variant:"outline",size:"sm","as-child":""},{default:a(()=>[t(e(h),{href:n.route("forms.edit",l.id),class:"flex items-center gap-1"},{default:a(()=>[t(e(B),{class:"h-3 w-3"}),s[2]||(s[2]=d(" Edit "))]),_:2,__:[2]},1032,["href"])]),_:2},1024)):c("",!0),l.file_url?(o(),i(e(u),{key:1,variant:"outline",size:"sm","as-child":""},{default:a(()=>[r("a",{href:l.file_url,download:l.file_original_name,class:"flex items-center gap-1"},[t(e(z),{class:"h-3 w-3"}),s[3]||(s[3]=d(" Download "))],8,G)]),_:2},1024)):c("",!0),m("forms.destroy")?(o(),i(e(u),{key:2,variant:"outline",size:"sm",onClick:O=>F(l.id),class:"text-destructive hover:text-destructive"},{default:a(()=>[t(e(H),{class:"h-3 w-3"})]),_:2},1032,["onClick"])):c("",!0)])])]),_:2},1024),l.file_original_name?(o(),i(e(g),{key:0},{default:a(()=>[r("div",J,[t(e(v),{class:"h-3 w-3"}),r("span",null,_(l.file_original_name),1)])]),_:2},1024)):c("",!0)]),_:2},1024))),128))])):(o(),i(e(k),{key:1},{default:a(()=>[t(e(g),{class:"flex flex-col items-center justify-center py-12"},{default:a(()=>[t(e(v),{class:"h-12 w-12 text-muted-foreground mb-4"}),s[6]||(s[6]=r("h3",{class:"text-lg font-medium mb-2"},"No forms yet",-1)),r("p",K,[s[4]||(s[4]=d(" You haven't created any forms yet. ")),m("forms.create")?(o(),y(p,{key:0},[d("Get started by creating your first form.")],64)):c("",!0)]),m("forms.create")?(o(),i(e(u),{key:0,"as-child":""},{default:a(()=>[t(e(h),{href:n.route("forms.create"),class:"flex items-center gap-2"},{default:a(()=>[t(e(w),{class:"h-4 w-4"}),s[5]||(s[5]=d(" Create Your First Form "))]),_:1,__:[5]},8,["href"])]),_:1})):c("",!0)]),_:1,__:[6]})]),_:1}))])]),_:1})],64))}});export{re as default};
